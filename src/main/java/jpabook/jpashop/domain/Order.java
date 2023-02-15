@@ -2,7 +2,6 @@ package jpabook.jpashop.domain;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.aspectj.weaver.ast.Or;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -19,7 +18,7 @@ public class Order {
 
     @Id
     @GeneratedValue
-    @Column(name = "id")
+    @Column(name = "order_id")
     private Long id;
 
     @ManyToOne(fetch = LAZY)
@@ -29,9 +28,9 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = ALL)
     private List<OrderItem> orderItems = new ArrayList<>();
 
-    @OneToOne(fetch = LAZY)
+    @OneToOne(cascade = ALL, fetch = LAZY)
     @JoinColumn(name = "delivery_id")
-    private Delivery delivery;
+    private Delivery delivery; // 배송정보
 
     private LocalDateTime orderDate; // 주문시간
 
@@ -41,6 +40,7 @@ public class Order {
     //==연관관계 메서드==//
     public void setMember(Member member) {
         this.member = member;
+        member.getOrders().add(this);
     }
 
     public void addOrderItem(OrderItem orderItem) {
@@ -70,7 +70,7 @@ public class Order {
     /**
      * 주문 취소
      */
-    public void create() {
+    public void cancel() {
         if (delivery.getStatus() == DeliveryStatus.COMP) {
             throw new IllegalStateException("이미 배송완료된 상품은 취소가 불가능합니다.");
         }
